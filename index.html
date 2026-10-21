@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#2D7A57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Taschengeld">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<title>Taschengeld</title>
+<script>
+(function () { try { var t = localStorage.getItem('tg.theme'); if (t === 'hell') document.documentElement.dataset.theme = 'light'; else if (t === 'dunkel') document.documentElement.dataset.theme = 'dark'; } catch (e) {} })();
+</script>
+<style>
+:root {
+  --bg: #F4F2EC; --card: #FFFFFF; --card2: #F8F6F1; --text: #1E2320; --muted: #5F6762; --line: #E2DED4;
+  --accent: #2D7A57; --accent-ink: #FFFFFF; --accent-soft: #E2F0E8;
+  --plus: #23774F; --minus: #B23F33; --warn: #8F6210; --warn-soft: #FBF1DC; --minus-soft: #F8E6E3;
+  --k0: #3B74C9; --k1: #C94C76; --k2: #23897D; --k3: #C46E1A; --k4: #7558C2; --k5: #55862C;
+  --shadow: 0 1px 2px rgba(30,35,32,.05), 0 6px 18px rgba(30,35,32,.06);
+  --overlay: rgba(20,24,22,.45);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121514; --card: #1C201E; --card2: #232826; --text: #E9EDEA; --muted: #A0A8A3; --line: #2F3532;
+    --accent: #4DB487; --accent-ink: #0D1A13; --accent-soft: #1E3329;
+    --plus: #5CC796; --minus: #EE8577; --warn: #E3B355; --warn-soft: #33291A; --minus-soft: #3A2220;
+    --k0: #6FA0EA; --k1: #E880A3; --k2: #4FB9AC; --k3: #E59A4F; --k4: #A08AE6; --k5: #86B85A;
+    --shadow: none;
+    --overlay: rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121514; --card: #1C201E; --card2: #232826; --text: #E9EDEA; --muted: #A0A8A3; --line: #2F3532;
+  --accent: #4DB487; --accent-ink: #0D1A13; --accent-soft: #1E3329;
+  --plus: #5CC796; --minus: #EE8577; --warn: #E3B355; --warn-soft: #33291A; --minus-soft: #3A2220;
+  --k0: #6FA0EA; --k1: #E880A3; --k2: #4FB9AC; --k3: #E59A4F; --k4: #A08AE6; --k5: #86B85A;
+  --shadow: none;
+  --overlay: rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h2 { font-size: 18px; margin: 0; }
+.zahl { font-variant-numeric: tabular-nums; }
+
+/* Kopf */
+.kopf { position: sticky; top: 0; z-index: 5; background: var(--bg); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
+.kopf-in { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 6px; padding: 8px 12px 8px 16px; min-height: 56px; }
+.kopf h1 { font-size: 19px; margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibtn { border: 0; background: transparent; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; flex: none; }
+.ibtn:hover { background: var(--card2); }
+.ibtn.zurueck { margin-left: -8px; font-size: 28px; line-height: 1; }
+.sync { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; flex: none; }
+.sync i { width: 8px; height: 8px; border-radius: 50%; background: var(--plus); flex: none; }
+.sync.warn i { background: var(--warn); }
+.sync.err i { background: var(--minus); }
+.sync.lokal i { background: var(--muted); }
+.sync.lauf i { animation: puls 1s ease-in-out infinite; }
+@keyframes puls { 50% { opacity: .25; } }
+
+main { max-width: 640px; margin: 0 auto; padding: 16px 16px calc(40px + env(safe-area-inset-bottom)); }
+section { margin-top: 24px; }
+.abschnitt { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 10px; }
+.leer { color: var(--muted); margin: 4px 2px 0; }
+.klein { font-size: 14px; color: var(--muted); }
+
+.karte { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 12px; }
+.hinweis { background: var(--warn-soft); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 15px; }
+.hinweis.rot { background: var(--minus-soft); }
+
+/* Knöpfe */
+.btn { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 11px 16px; font-weight: 600; min-height: 46px; }
+.btn:hover { background: var(--card2); }
+.btn.primaer { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primaer:hover { filter: brightness(1.05); }
+.btn.gefahr { color: var(--minus); }
+.btn.voll { width: 100%; }
+.btn.klein { min-height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+.link { border: 0; background: none; color: var(--accent); font-weight: 600; padding: 4px 0; }
+.knoepfe { display: flex; gap: 10px; margin-top: 18px; }
+.knoepfe .btn { flex: 1; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Avatar */
+.avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; flex: none; background: var(--kf); background: color-mix(in srgb, var(--kf) 22%, var(--card)); border: 2px solid var(--kf); }
+.avatar.gross { width: 76px; height: 76px; font-size: 42px; margin: 0 auto 8px; border-width: 3px; }
+.avatar.mini { width: 36px; height: 36px; font-size: 20px; }
+
+/* Startseite */
+.kindkarte { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; border-left: 5px solid var(--kf); }
+.kindkarte .mitte { flex: 1; min-width: 0; }
+.kindkarte .name { display: block; font-weight: 700; font-size: 18px; }
+.kindkarte .unter { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+.kindkarte .betrag { font-size: 24px; font-weight: 750; white-space: nowrap; }
+.miniziel { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+.miniziel .balken { flex: 1; height: 8px; }
+
+/* Kind-Seite */
+.held { background: var(--card); background: color-mix(in srgb, var(--kf) 12%, var(--card)); border: 1px solid var(--line); border-radius: 22px; padding: 22px 16px 20px; text-align: center; }
+.held-name { font-size: 20px; font-weight: 700; }
+.held-label { color: var(--muted); margin-top: 10px; font-size: 15px; }
+.held-betrag { font-size: 46px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+.held-betrag.minus { color: var(--minus); }
+.held-info { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.aktionen { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.aktionen .btn { padding: 10px 6px; }
+
+.ziel-kopf { display: flex; align-items: center; gap: 12px; }
+.ziel-emoji { font-size: 30px; width: 44px; text-align: center; flex: none; }
+.ziel-titel { flex: 1; min-width: 0; }
+.ziel-titel b { display: block; font-size: 17px; overflow-wrap: anywhere; }
+.ziel-titel span { font-size: 14px; color: var(--muted); }
+.pct { font-weight: 700; font-size: 17px; }
+.balken { height: 14px; border-radius: 99px; background: var(--card2); border: 1px solid var(--line); overflow: hidden; margin: 12px 0 8px; }
+.balken > i { display: block; height: 100%; min-width: 0; background: var(--kf); border-radius: 99px; transition: width .4s; }
+.ziel-info { font-size: 14px; color: var(--muted); }
+.ziel-info b { color: var(--plus); }
+.ziel-aktionen { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+details.frueher { margin-top: 6px; }
+details.frueher summary { cursor: pointer; color: var(--muted); font-size: 15px; padding: 6px 2px; }
+.frueher-zeile { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.frueher-zeile .mitte { flex: 1; min-width: 0; }
+.frueher-zeile small { display: block; color: var(--muted); }
+
+/* Verlauf */
+.verlauf { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 2px 12px; }
+.monat { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; padding: 14px 4px 6px; border-bottom: 1px solid var(--line); }
+.monat span:last-child { text-transform: none; font-weight: 600; letter-spacing: 0; }
+.zeile { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 4px; }
+.zeile:last-child { border-bottom: 0; }
+.zeile:hover { background: var(--card2); }
+.zicon { font-size: 22px; text-align: center; }
+.ztext { min-width: 0; }
+.ztext b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ztext small, .zbetrag small { display: block; color: var(--muted); font-size: 13px; }
+.zbetrag { text-align: right; white-space: nowrap; }
+.zbetrag b { font-weight: 700; }
+.plus { color: var(--plus); }
+.minus { color: var(--minus); }
+.zeile.storniert b { text-decoration: line-through; color: var(--muted); }
+.zeile.offen .ztext small::after { content: " · wird gespeichert"; color: var(--warn); }
+
+/* Einstellungen */
+.liste { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.lzeile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.lzeile:last-child { border-bottom: 0; }
+.lzeile .mitte { flex: 1; min-width: 0; }
+.lzeile .mitte small { display: block; color: var(--muted); font-size: 14px; }
+.lzeile .knopfreihe { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.segment { display: flex; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+.segment button { flex: 1; border: 0; background: none; border-radius: 9px; padding: 8px; font-weight: 600; color: var(--muted); }
+.segment button[aria-pressed="true"] { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+
+/* Formular-Blatt */
+#sheet .hg { position: fixed; inset: 0; background: var(--overlay); z-index: 20; animation: ein .15s; }
+#sheet .blatt { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--card); border-radius: 22px 22px 0 0; max-height: 92vh; overflow: auto; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; animation: hoch .2s ease-out; overscroll-behavior: contain; }
+@media (min-width: 700px) { #sheet .blatt { bottom: auto; top: 6vh; border-radius: 22px; max-height: 88vh; } }
+@keyframes ein { from { opacity: 0; } }
+@keyframes hoch { from { transform: translateY(30px); opacity: 0; } }
+.blatt h2 { font-size: 20px; margin-bottom: 14px; }
+.blatt p { margin: 0 0 12px; }
+.feld { display: block; margin-bottom: 14px; }
+.feld > span { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.feld input:not([type=checkbox]):not([type=radio]), .feld select { width: 100%; min-height: 48px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 17px; }
+.feld input.gross { font-size: 34px; font-weight: 750; text-align: center; min-height: 64px; }
+.schalter { display: flex; align-items: center; gap: 12px; font-weight: 600; margin-bottom: 14px; }
+.schalter input { width: 22px; height: 22px; accent-color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--card2); font-weight: 600; font-size: 15px; cursor: pointer; }
+.chip input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.emojis { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.emojis .chip span { justify-content: center; width: 100%; aspect-ratio: 1; padding: 0; font-size: 24px; border-radius: 12px; }
+.emojis .chip input:checked + span { background: var(--accent-soft); border: 2px solid var(--accent); }
+.farben { display: flex; gap: 10px; flex-wrap: wrap; }
+.farben .chip span { width: 40px; height: 40px; padding: 0; border-radius: 50%; background: var(--kf); border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--line); }
+.farben .chip input:checked + span { box-shadow: 0 0 0 3px var(--text); background: var(--kf); }
+.fehler { color: var(--minus); font-weight: 600; min-height: 1px; margin: 4px 0 0; }
+.warnung { background: var(--warn-soft); border-radius: 12px; padding: 10px 12px; font-size: 15px; margin-bottom: 12px; }
+dl.details { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 8px; }
+dl.details dt { color: var(--muted); }
+dl.details dd { margin: 0; overflow-wrap: anywhere; }
+.linkfeld { width: 100%; font-size: 14px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
+
+#toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 600; opacity: 0; pointer-events: none; transition: .2s; z-index: 30; max-width: calc(100% - 32px); text-align: center; }
+#toast.an { opacity: 1; transform: translate(-50%, 0); }
+
+.mitte-text { text-align: center; padding: 40px 8px; }
+.mitte-text .gross-emoji { font-size: 56px; }
+@media (max-width: 380px) {
+  .held-betrag { font-size: 40px; }
+  .aktionen { grid-template-columns: 1fr 1fr; }
+  .aktionen .btn:first-child { grid-column: 1 / -1; }
+  .emojis { grid-template-columns: repeat(6, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="kern.js"></script>
+<script>
+'use strict';
+
+// Nach der Einrichtung die Web-App-URL von Apps Script eintragen (leer = nur dieses Gerät)
+const API_URL_FEST = '';
+const VERSION = '1.0';
+
+const LS = {
+  api: 'tg.api', schluessel: 'tg.schluessel', daten: 'tg.daten', ausstehend: 'tg.ausstehend',
+  abgelehnt: 'tg.abgelehnt', lokal: 'tg.lokal', theme: 'tg.theme'
+};
+const ARTINFO = {
+  taschengeld: { name: 'Taschengeld', icon: '💶', ein: true },
+  geschenk: { name: 'Geschenk', icon: '🎁', ein: true },
+  belohnung: { name: 'Belohnung', icon: '⭐', ein: true },
+  ausgabe: { name: 'Ausgabe', icon: '🛒', aus: true },
+  sparziel: { name: 'Sparziel eingelöst', icon: '🎯', aus: true },
+  sonstiges: { name: 'Sonstiges', icon: '✏️', ein: true, aus: true }
+};
+const KIND_EMOJIS = ['🦊', '🐼', '🐯', '🦄', '🐸', '🐙', '🦖', '🐶', '🐱', '🐰', '🐻', '🐨', '🦁', '🐧', '⚽', '🚀'];
+const ZIEL_EMOJIS = ['🎯', '🎮', '🧸', '🚲', '⚽', '📚', '🎧', '🛹', '🎨', '🧩', '🎁', '📱', '👟', '🏰', '🎢', '🌟'];
+const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const WTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+const WK = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+// ---------- Hilfen ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function lsGet(k, std) { try { const v = localStorage.getItem(k); return v == null ? std : v; } catch (e) { return std; } }
+function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function lsJson(k, std) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : std; } catch (e) { return std; } }
+const kopie = x => JSON.parse(JSON.stringify(x));
+
+const EUR = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+const euro = c => EUR.format((c || 0) / 100).replace('-', '−');
+const euroVz = c => (c > 0 ? '+' : c < 0 ? '−' : '') + EUR.format(Math.abs(c) / 100);
+function betragLesen(s) {
+  let t = String(s || '').replace(/[\s€]/g, '');
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return NaN;
+  return Math.round(parseFloat(t) * 100);
+}
+const betragFeld = c => c ? (c / 100).toFixed(2).replace('.', ',').replace(/,00$/, '') : '';
+
+function heuteLokal() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+const heute = () => S.heute || heuteLokal();
+const jahrZusatz = s => s.slice(0, 4) !== heute().slice(0, 4) ? s.slice(0, 4) : '';
+const datumKurz = s => WK[Kern.wochentag(s) - 1] + ', ' + s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + jahrZusatz(s);
+const datumLang = s => WTAGE[Kern.wochentag(s) - 1] + ', ' + (+s.slice(8, 10)) + '. ' + MONATE[+s.slice(5, 7) - 1] + (jahrZusatz(s) ? ' ' + jahrZusatz(s) : '');
+const monatName = m => MONATE[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4);
+function ungefaehr(s) {
+  const t = +s.slice(8, 10);
+  return (t <= 10 ? 'Anfang' : t <= 20 ? 'Mitte' : 'Ende') + ' ' + MONATE[+s.slice(5, 7) - 1] + (jahrZusatz(s) ? ' ' + jahrZusatz(s) : '');
+}
+function zeitpunkt(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+}
+const uhrzeit = iso => new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+const neueId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function zufallsCode(n) {
+  const a = new Uint8Array(n);
+  crypto.getRandomValues(a);
+  return Array.from(a, x => (x % 16).toString(16)).join('');
+}
+const kf = k => `--kf:var(--k${(+k.farbe || 0) % 6})`;
+
+// ---------- Rolle und Verbindung ----------
+const URLP = new URLSearchParams(location.search);
+const KIND_CODE = (URLP.get('kind') || '').replace(/[^A-Za-z0-9]/g, '');
+const MODUS = KIND_CODE ? 'kind' : 'eltern';
+const erlaubteUrl = u => /^https:\/\/script\.google(usercontent)?\.com\//.test(u) || /^\/[\w\-/]*$/.test(u);
+function apiUrl() {
+  if (MODUS === 'kind') { const u = URLP.get('api') || ''; return erlaubteUrl(u) ? u : API_URL_FEST; }
+  return lsGet(LS.api, '') || API_URL_FEST;
+}
+const lokal = () => !apiUrl();
+const cacheKey = () => MODUS === 'kind' ? 'tg.daten.k.' + KIND_CODE : LS.daten;
+const leer = () => ({ kinder: [], buchungen: [], sparziele: [], regeln: [], heute: '', abgleich: '' });
+
+let S = Object.assign(leer(), lsJson(cacheKey(), {}));
+let V = { seite: 'start', kindId: '', mehr: false };
+let sync = { zustand: '', meldung: '' };
+
+const ausstehend = () => lsJson(LS.ausstehend, []);
+const abgelehnt = () => lsJson(LS.abgelehnt, []);
+
+// Serverstand plus noch nicht bestätigte Änderungen
+function anzeige() {
+  const d = kopie({ kinder: S.kinder, buchungen: S.buchungen, sparziele: S.sparziele, regeln: S.regeln });
+  if (MODUS === 'eltern') {
+    const ctx = { heute: heute(), jetzt: new Date().toISOString(), neuerCode: () => '', geaendert: {} };
+    for (const op of ausstehend()) Kern.opAnwenden(d, op, ctx);
+  }
+  return d;
+}
+
+function lokalVerarbeiten(req) {
+  const db = lsJson(LS.lokal, null) || {};
+  const ctx = { heute: heuteLokal(), jetzt: new Date().toISOString(), schluessel: null, neuerCode: () => zufallsCode(12) };
+  const res = Kern.verarbeite(db, req, ctx);
+  if (Object.keys(ctx.geaendert).length && !lsSet(LS.lokal, JSON.stringify(db))) return { ok: false, fehler: 'speicher' };
+  return kopie(res);
+}
+
+async function anfrageAn(url, req) {
+  if (!url) return lokalVerarbeiten(req);
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 20000);
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(req),
+      signal: ac.signal, cache: 'no-store', credentials: 'omit', redirect: 'follow' });
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch (e) { throw new Error('keinJson'); }
+  } finally { clearTimeout(t); }
+}
+
+// Sendet die Warteschlange und holt den neuen Stand. Läuft nie doppelt.
+let laeuft = false, nochmal = false, sendT = 0;
+async function abgleichen() {
+  if (MODUS === 'kind' && !apiUrl()) return;
+  if (MODUS === 'eltern' && !lokal() && !lsGet(LS.schluessel, '')) { sync.zustand = 'anmelden'; render(); return; }
+  if (laeuft) { nochmal = true; return; }
+  laeuft = true;
+  try {
+    do {
+      nochmal = false;
+      const ops = MODUS === 'eltern' ? ausstehend().slice(0, 100) : [];
+      const req = MODUS === 'kind' ? { kind: KIND_CODE } : { schluessel: lsGet(LS.schluessel, ''), ops };
+      sync.zustand = 'lauf'; kopfAktualisieren();
+      let res;
+      try { res = await anfrageAn(apiUrl(), req); } catch (e) {
+        sync.zustand = navigator.onLine === false ? 'offline' : 'fehler';
+        sync.meldung = e.message === 'keinJson' ? 'Die Web-App hat keine Daten geliefert. Ist der Zugriff auf „Jeder“ gestellt?' : 'Keine Verbindung zur Google-Tabelle.';
+        break;
+      }
+      if (!res || !res.ok) {
+        const f = res && res.fehler;
+        sync.zustand = f === 'schluessel' ? 'anmelden' : f === 'link' ? 'link' : f === 'einrichten' ? 'einrichten' : 'fehler';
+        sync.meldung = f === 'speicher' ? 'Speicher dieses Geräts ist voll.' : f === 'beschaeftigt' ? 'Tabelle gerade beschäftigt, gleich nochmal.' : (res && res.text) || '';
+        break;
+      }
+      const ergebnisse = res.ergebnisse || [];
+      if (ergebnisse.length) {
+        const nachUid = new Map(ops.map(o => [o.uid, o]));
+        const neuAbgelehnt = ergebnisse.filter(e => e.fehler && nachUid.has(e.uid))
+          .map(e => ({ op: nachUid.get(e.uid), grund: e.fehler, zeit: new Date().toISOString() }));
+        if (neuAbgelehnt.length) lsSet(LS.abgelehnt, JSON.stringify(abgelehnt().concat(neuAbgelehnt)));
+        const fertig = new Set(ergebnisse.map(e => e.uid));
+        lsSet(LS.ausstehend, JSON.stringify(ausstehend().filter(o => !fertig.has(o.uid))));
+        if (neuAbgelehnt.length) toast(neuAbgelehnt.length === 1 ? 'Eine Änderung wurde abgelehnt' : neuAbgelehnt.length + ' Änderungen abgelehnt');
+      }
+      S = { kinder: res.kinder || [], buchungen: res.buchungen || [], sparziele: res.sparziele || [], regeln: res.regeln || [],
+        heute: res.heute || '', abgleich: new Date().toISOString() };
+      lsSet(cacheKey(), JSON.stringify(S));
+      sync = { zustand: 'ok', meldung: '' };
+      if (MODUS === 'eltern' && ausstehend().length && ergebnisse.length) nochmal = true;
+    } while (nochmal);
+  } finally {
+    laeuft = false;
+    render();
+  }
+}
+
+function vormerken(ops) {
+  const q = ausstehend();
+  ops.forEach(o => { o.uid = neueId('o'); q.push(o); });
+  if (!lsSet(LS.ausstehend, JSON.stringify(q))) { toast('Speichern nicht möglich – Speicher voll?'); return false; }
+  render();
+  clearTimeout(sendT);
+  sendT = setTimeout(abgleichen, lokal() ? 0 : 300);
+  return true;
+}
+
+// ---------- Auswertungen ----------
+const kindVon = (d, id) => d.kinder.find(k => k.id === id);
+const aktiveKinder = d => d.kinder.filter(k => !k.archiviert).sort((a, b) => (+a.pos || 0) - (+b.pos || 0));
+const regelVon = (d, id) => d.regeln.find(r => r.kindId === id);
+
+// Ziele werden der Reihe nach gefüllt: erst das oberste, der Rest fließt ins nächste
+function zieleVon(d, kindId) {
+  const alle = d.sparziele.filter(z => z.kindId === kindId);
+  const aktiv = alle.filter(z => z.status === 'aktiv')
+    .sort((a, b) => (+a.pos || 0) - (+b.pos || 0) || (a.erstellt < b.erstellt ? -1 : 1));
+  let rest = Math.max(0, Kern.stand(d.buchungen, kindId));
+  for (const z of aktiv) { z._gespart = Math.min(rest, +z.betrag); rest -= z._gespart; }
+  const fertig = alle.filter(z => z.status !== 'aktiv').sort((a, b) => (b.erledigt || '').localeCompare(a.erledigt || ''));
+  return { aktiv, fertig };
+}
+
+// Wie viel Taschengeld kommt pro Woche dazu? Automatik, sonst Durchschnitt der letzten 90 Tage (Geschenke zählen nicht, die sind unregelmäßig)
+function wochenRate(d, kindId) {
+  const r = regelVon(d, kindId);
+  if (Kern.regelAktiv(r)) return r.rhythmus === 'woche' ? +r.betrag : +r.betrag * 12 / 52;
+  const grenze = Kern.datumAus(Kern.tagNr(heute()) - 90);
+  const summe = d.buchungen.filter(b => b.kindId === kindId && !b.storniert && b.art === 'taschengeld' && +b.betrag > 0 && b.datum > grenze)
+    .reduce((s, b) => s + +b.betrag, 0);
+  return summe / (90 / 7);
+}
+
+function verlaufVon(d, kindId) {
+  const liste = d.buchungen.filter(b => b.kindId === kindId)
+    .sort((a, b) => a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : (a.erstellt < b.erstellt ? -1 : a.erstellt > b.erstellt ? 1 : 0));
+  let s = 0;
+  for (const b of liste) { if (!b.storniert) s += +b.betrag; b._stand = s; }
+  return liste.reverse();
+}
+
+function regelText(r) {
+  if (!Kern.regelAktiv(r)) return 'Automatik aus';
+  const t = +r.tag;
+  return euro(+r.betrag) + (r.rhythmus === 'woche' ? ' jeden ' + WTAGE[t - 1] : t >= 31 ? ' am Monatsende' : ' am ' + t + '. jedes Monats');
+}
+
+// ---------- Darstellung ----------
+function render() {
+  const d = anzeige();
+  if (MODUS === 'eltern' && V.seite === 'kind' && !aktiveKinder(d).some(k => k.id === V.kindId)) V.seite = 'start';
+  const sp = sperre(d);
+  let titel = 'Taschengeld', zurueck = false;
+  if (!sp && MODUS === 'eltern' && V.seite === 'kind') { titel = kindVon(d, V.kindId).name; zurueck = true; }
+  if (!sp && MODUS === 'eltern' && V.seite === 'einstellungen') { titel = 'Einstellungen'; zurueck = true; }
+
+  let html = `<header class="kopf"><div class="kopf-in">
+    ${zurueck ? '<button class="ibtn zurueck" data-act="zurueck" aria-label="Zurück">‹</button>' : ''}
+    <h1>${esc(titel)}</h1>
+    <span id="syncplatz">${syncKnopf()}</span>
+    ${MODUS === 'eltern' && V.seite !== 'einstellungen' && !sp ? '<button class="ibtn" data-act="einstellungen" aria-label="Einstellungen">⚙️</button>' : ''}
+  </div></header><main>`;
+  if (sp) html += sp;
+  else if (MODUS === 'kind') html += renderKind(d, d.kinder[0].id, true);
+  else if (V.seite === 'einstellungen') html += renderEinstellungen(d);
+  else if (V.seite === 'kind') html += renderKind(d, V.kindId, false);
+  else html += renderStart(d);
+  $('#app').innerHTML = html + '</main>';
+}
+
+function syncKnopf() {
+  const n = ausstehend().length, ab = abgelehnt().length;
+  let cls = '', txt;
+  if (MODUS === 'eltern' && lokal()) { cls = 'lokal'; txt = 'nur dieses Gerät'; }
+  else if (sync.zustand === 'anmelden') { cls = 'err'; txt = 'nicht angemeldet'; }
+  else if (sync.zustand === 'link' || sync.zustand === 'einrichten') { cls = 'err'; txt = 'Fehler'; }
+  else if (ab && MODUS === 'eltern') { cls = 'err'; txt = ab + ' abgelehnt'; }
+  else if (n) { cls = 'warn'; txt = sync.zustand === 'lauf' ? 'speichert …' : n + ' nicht gesendet'; }
+  else if (sync.zustand === 'offline' || sync.zustand === 'fehler') { cls = 'warn'; txt = 'offline'; }
+  else if (S.abgleich) txt = 'aktuell · ' + uhrzeit(S.abgleich);
+  else { cls = 'warn'; txt = 'lädt …'; }
+  if (sync.zustand === 'lauf') cls += ' lauf';
+  const act = MODUS === 'eltern' ? 'einstellungen' : 'neuLaden';
+  return `<button class="sync ${cls}" data-act="${act}" aria-label="Abgleich: ${esc(txt)}"><i></i>${esc(txt)}</button>`;
+}
+function kopfAktualisieren() { const el = $('#syncplatz'); if (el) el.innerHTML = syncKnopf(); }
+
+function meldungSeite(emoji, titel, text, knopf) {
+  return `<div class="mitte-text"><div class="gross-emoji">${emoji}</div><h2 style="margin:10px 0 6px">${titel}</h2><p class="klein">${text}</p>${knopf || ''}</div>`;
+}
+
+function sperre(d) {
+  if (MODUS === 'kind') {
+    if (!apiUrl()) return meldungSeite('🔗', 'Dieser Link ist unvollständig', 'Bitte hol dir einen neuen Link von Mama oder Papa.');
+    if (sync.zustand === 'link') return meldungSeite('🔗', 'Dieser Link gilt nicht mehr', 'Bitte hol dir einen neuen Link von Mama oder Papa.');
+    if (!d.kinder.length) {
+      if (sync.zustand === 'offline' || sync.zustand === 'fehler') return meldungSeite('📡', 'Keine Verbindung', 'Prüfe das Internet und versuch es gleich nochmal.', '<button class="btn primaer" data-act="neuLaden">Nochmal versuchen</button>');
+      return meldungSeite('⏳', 'Lädt …', 'Einen Moment.');
+    }
+    return '';
+  }
+  if (lokal()) return '';
+  if (sync.zustand === 'einrichten') return meldungSeite('🛠️', 'Backend noch nicht eingerichtet', 'In Apps Script einmal die Funktion „einrichten“ ausführen, dann neu laden.', '<button class="btn" data-act="verbindung">Verbindung ändern</button>');
+  if (!lsGet(LS.schluessel, '') || (sync.zustand === 'anmelden' && !d.kinder.length)) {
+    return meldungSeite('🐷', 'Willkommen beim Taschengeld',
+      (sync.zustand === 'anmelden' && lsGet(LS.schluessel, '') ? '<b>Der Schlüssel passt nicht.</b><br>' : '') +
+      'Eltern melden dieses Gerät einmal mit dem Eltern-Schlüssel an.<br>Kinder öffnen einfach den Link, den sie von Mama oder Papa bekommen haben.',
+      '<button class="btn primaer" data-act="verbindung">Eltern-Schlüssel eingeben</button>');
+  }
+  return '';
+}
+
+function renderStart(d) {
+  const kinder = aktiveKinder(d);
+  let h = '';
+  if (lokal()) h += `<div class="hinweis"><b>Nur auf diesem Gerät.</b> Damit die Kinder ihren Stand auf dem eigenen Handy sehen, verbinde die App mit eurer Google-Tabelle. <button class="link" data-act="verbindung">Verbinden</button></div>`;
+  h += hinweisAnmeldung();
+  if (!kinder.length) {
+    const lokalDb = lsJson(LS.lokal, null);
+    if (!lokal() && lokalDb && (lokalDb.kinder || []).length && !lokalDb.uebernommen) {
+      return h + meldungSeite('📦', 'Daten von diesem Gerät übernehmen?', 'Die Google-Tabelle ist noch leer, auf diesem Gerät liegen aber schon Daten aus der Zeit davor.',
+        '<button class="btn primaer" data-act="lokalUebernehmen">In die Tabelle übernehmen</button>');
+    }
+    return h + meldungSeite('🐷', 'Willkommen!', 'Lege zuerst deine Kinder an. Danach kannst du Taschengeld eintragen und Sparziele setzen.',
+      '<button class="btn primaer" data-act="kindNeu">＋ Kind anlegen</button>');
+  }
+  kinder.forEach(k => {
+    const stand = Kern.stand(d.buchungen, k.id);
+    const r = regelVon(d, k.id);
+    const naechst = Kern.naechsterTermin(r, heute());
+    const ziel = zieleVon(d, k.id).aktiv[0];
+    const pct = ziel ? Math.round(ziel._gespart / +ziel.betrag * 100) : 0;
+    h += `<button class="karte kindkarte" style="${kf(k)}" data-act="kind" data-id="${esc(k.id)}">
+      <span class="avatar">${esc(k.emoji)}</span>
+      <span class="mitte"><span class="name">${esc(k.name)}</span>
+        <span class="unter">${naechst ? 'Nächstes Taschengeld ' + datumKurz(naechst) : regelText(r)}</span>
+        ${ziel ? `<span class="miniziel"><span>${esc(ziel.emoji)}</span><span class="balken"><i style="width:${pct}%"></i></span><span class="zahl">${pct} %</span></span>` : ''}
+      </span>
+      <span class="betrag zahl ${stand < 0 ? 'minus' : ''}">${euro(stand)}</span>
+    </button>`;
+  });
+  return h;
+}
+
+function hinweisAnmeldung() {
+  if (MODUS !== 'eltern' || lokal()) return '';
+  if (sync.zustand === 'anmelden') return `<div class="hinweis rot"><b>Schlüssel abgelehnt.</b> Änderungen werden nicht gespeichert. <button class="link" data-act="verbindung">Neu eingeben</button></div>`;
+  if (abgelehnt().length) return `<div class="hinweis rot"><b>${abgelehnt().length} Änderung(en) abgelehnt.</b> <button class="link" data-act="einstellungen">Ansehen</button></div>`;
+  return '';
+}
+
+function renderKind(d, kindId, kinderSicht) {
+  const k = kindVon(d, kindId);
+  const stand = Kern.stand(d.buchungen, k.id);
+  const r = regelVon(d, k.id);
+  const naechst = Kern.naechsterTermin(r, heute());
+  const kid = esc(k.id);
+  let h = hinweisAnmeldung();
+  h += `<div class="held" style="${kf(k)}">
+    <div class="avatar gross">${esc(k.emoji)}</div>
+    <div class="held-name">${kinderSicht ? 'Hallo, ' + esc(k.name) + '!' : esc(k.name)}</div>
+    <div class="held-label">${kinderSicht ? 'Du hast gerade' : 'Kontostand'}</div>
+    <div class="held-betrag zahl ${stand < 0 ? 'minus' : ''}">${euro(stand)}</div>
+    ${naechst ? `<div class="held-info">Nächstes Taschengeld: <b>${euro(+r.betrag)}</b> am ${datumLang(naechst)}</div>` : ''}
+  </div>`;
+  if (!kinderSicht) h += `<div class="aktionen">
+    <button class="btn primaer" data-act="taschengeld" data-kind="${kid}">＋ Taschengeld</button>
+    <button class="btn" data-act="einzahlen" data-kind="${kid}">＋ Bekommen</button>
+    <button class="btn" data-act="ausgeben" data-kind="${kid}">− Ausgabe</button>
+  </div>`;
+
+  // Sparziele
+  const { aktiv, fertig } = zieleVon(d, k.id);
+  const rate = wochenRate(d, k.id);
+  h += `<section><div class="abschnitt"><h2>${kinderSicht ? 'Deine Sparziele' : 'Sparziele'}</h2>${kinderSicht ? '' : `<button class="link" data-act="zielNeu" data-kind="${kid}">＋ Neues Ziel</button>`}</div>`;
+  if (!aktiv.length) h += `<p class="leer">${kinderSicht ? 'Noch kein Sparziel. Worauf möchtest du sparen? Sag es Mama oder Papa!' : 'Noch kein Sparziel.'}</p>`;
+  let offenBisher = 0;
+  aktiv.forEach((z, i) => {
+    const b = +z.betrag, fehlt = b - z._gespart, geschafft = fehlt <= 0;
+    const pct = Math.min(100, Math.round(z._gespart / b * 100));
+    offenBisher += Math.max(0, fehlt);
+    let info = geschafft ? '<b>Geschafft! 🎉</b>' : 'Noch ' + euro(fehlt);
+    if (!geschafft && rate > 0) {
+      const wochen = Math.ceil(offenBisher / rate);
+      info += wochen > 104 ? ' · das dauert noch eine Weile' : ' · ca. ' + ungefaehr(Kern.datumAus(Kern.tagNr(heute()) + wochen * 7));
+    }
+    h += `<div class="karte" style="${kf(k)}">
+      <div class="ziel-kopf"><span class="ziel-emoji">${esc(z.emoji)}</span>
+        <div class="ziel-titel"><b>${esc(z.name)}</b><span class="zahl">${euro(z._gespart)} von ${euro(b)}</span></div>
+        <span class="pct zahl">${pct} %</span></div>
+      <div class="balken" role="progressbar" aria-label="${esc(z.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>
+      <div class="ziel-info">${info}</div>
+      ${kinderSicht ? '' : `<div class="ziel-aktionen">
+        ${geschafft ? `<button class="btn primaer klein" data-act="zielEinloesen" data-id="${esc(z.id)}">Gekauft – abbuchen</button>` : ''}
+        <button class="btn klein" data-act="zielBearbeiten" data-id="${esc(z.id)}">Bearbeiten</button>
+        ${i > 0 ? `<button class="btn klein" data-act="zielHoch" data-id="${esc(z.id)}">↑ Vorziehen</button>` : ''}
+      </div>`}
+    </div>`;
+  });
+  if (aktiv.length > 1) h += `<p class="klein" style="margin:0 2px">Das Geld füllt die Ziele der Reihe nach, das oberste zuerst.</p>`;
+  if (fertig.length) {
+    h += `<details class="frueher"><summary>Frühere Ziele (${fertig.length})</summary>`;
+    fertig.forEach(z => {
+      h += `<div class="frueher-zeile"><span class="ziel-emoji" style="font-size:22px;width:30px">${esc(z.emoji)}</span>
+        <span class="mitte">${esc(z.name)} · ${euro(+z.betrag)}<small>${z.status === 'erreicht' ? '🎉 erreicht' : 'aufgegeben'}${z.erledigt ? ' am ' + datumKurz(z.erledigt) : ''}</small></span>
+        ${kinderSicht ? '' : `<button class="btn klein" data-act="zielAktivieren" data-id="${esc(z.id)}">Wieder aktiv</button>`}</div>`;
+    });
+    h += '</details>';
+  }
+  h += '</section>';
+
+  // Verlauf
+  const liste = verlaufVon(d, k.id);
+  const offen = new Set(ausstehend().filter(o => o.typ === 'buchung' || o.typ === 'storno').map(o => o.daten.id));
+  const summen = {};
+  liste.forEach(b => {
+    if (b.storniert) return;
+    const m = summen[b.datum.slice(0, 7)] || (summen[b.datum.slice(0, 7)] = { ein: 0, aus: 0 });
+    if (+b.betrag > 0) m.ein += +b.betrag; else m.aus -= +b.betrag;
+  });
+  h += `<section><div class="abschnitt"><h2>${kinderSicht ? 'Was passiert ist' : 'Verlauf'}</h2></div>`;
+  if (!liste.length) h += '<p class="leer">Noch keine Buchungen.</p>';
+  else {
+    const max = V.mehr ? Infinity : 40;
+    let monat = '';
+    h += '<div class="verlauf">';
+    liste.slice(0, max).forEach(b => {
+      const m = b.datum.slice(0, 7);
+      if (m !== monat) {
+        monat = m;
+        const s = summen[m] || { ein: 0, aus: 0 };
+        h += `<div class="monat"><span>${monatName(m)}</span><span class="zahl">${s.ein ? '<span class="plus">+' + euro(s.ein) + '</span>' : ''}${s.ein && s.aus ? ' · ' : ''}${s.aus ? '<span class="minus">−' + euro(s.aus) + '</span>' : ''}</span></div>`;
+      }
+      const a = ARTINFO[b.art] || ARTINFO.sonstiges;
+      const betrag = +b.betrag;
+      const titel = b.text || a.name;
+      const unter = datumKurz(b.datum) + (b.text ? ' · ' + a.name : '') + (b.storniert ? ' · storniert' : '');
+      h += `<button class="zeile${b.storniert ? ' storniert' : ''}${offen.has(b.id) ? ' offen' : ''}" data-act="buchung" data-id="${esc(b.id)}">
+        <span class="zicon" aria-hidden="true">${a.icon}</span>
+        <span class="ztext"><b>${esc(titel)}</b><small>${esc(unter)}</small></span>
+        <span class="zbetrag zahl"><b class="${betrag > 0 ? 'plus' : 'minus'}">${euroVz(betrag)}</b><small>Stand ${euro(b._stand)}</small></span>
+      </button>`;
+    });
+    h += '</div>';
+    if (liste.length > max) h += `<button class="btn voll" style="margin-top:10px" data-act="mehr">Ältere anzeigen (${liste.length - max})</button>`;
+  }
+  h += '</section>';
+  return h;
+}
+
+function renderEinstellungen(d) {
+  const kinder = aktiveKinder(d), archiv = d.kinder.filter(k => k.archiviert);
+  let h = hinweisAnmeldung();
+  h += `<section style="margin-top:0"><div class="abschnitt"><h2>Kinder</h2><button class="link" data-act="kindNeu">＋ Kind anlegen</button></div>`;
+  if (!kinder.length) h += '<p class="leer">Noch keine Kinder angelegt.</p>';
+  else {
+    h += '<div class="liste">';
+    kinder.forEach(k => {
+      const kid = esc(k.id);
+      h += `<div class="lzeile" style="${kf(k)}"><span class="avatar mini">${esc(k.emoji)}</span>
+        <div class="mitte"><b>${esc(k.name)}</b><small>${euro(Kern.stand(d.buchungen, k.id))} · ${regelText(regelVon(d, k.id))}</small>
+          <div class="knopfreihe">
+            <button class="btn klein" data-act="kindBearbeiten" data-id="${kid}">Bearbeiten</button>
+            <button class="btn klein" data-act="regel" data-id="${kid}">Automatik</button>
+            <button class="btn klein" data-act="teilen" data-id="${kid}">Link fürs Kind</button>
+          </div></div></div>`;
+    });
+    h += '</div>';
+  }
+  if (archiv.length) {
+    h += `<details class="frueher"><summary>Archiviert (${archiv.length})</summary>`;
+    archiv.forEach(k => h += `<div class="frueher-zeile"><span class="mitte">${esc(k.emoji)} ${esc(k.name)}<small>${euro(Kern.stand(d.buchungen, k.id))}</small></span><button class="btn klein" data-act="kindZurueck" data-id="${esc(k.id)}">Wiederherstellen</button></div>`);
+    h += '</details>';
+  }
+  h += '</section>';
+
+  // Verbindung
+  const lokalDb = lsJson(LS.lokal, null);
+  h += `<section><div class="abschnitt"><h2>Verbindung</h2></div><div class="liste"><div class="lzeile"><div class="mitte">`;
+  if (lokal()) h += `<b>Nur dieses Gerät</b><small>Die Daten liegen nur hier im Browser. Für die Kinder-Handys die Google-Tabelle verbinden (Anleitung in der README).</small>`;
+  else h += `<b>Google-Tabelle</b><small>${sync.zustand === 'anmelden' ? 'Schlüssel abgelehnt' : 'Als Eltern angemeldet'}${S.abgleich ? ' · zuletzt aktuell ' + zeitpunkt(S.abgleich) : ''}</small>${sync.meldung ? `<small class="minus">${esc(sync.meldung)}</small>` : ''}`;
+  h += `<div class="knopfreihe"><button class="btn klein" data-act="verbindung">${lokal() ? 'Verbinden' : 'Ändern'}</button>${lokal() ? '' : '<button class="btn klein" data-act="neuLaden">Jetzt abgleichen</button>'}</div></div></div>`;
+  if (!lokal() && lokalDb && (lokalDb.kinder || []).length && !lokalDb.uebernommen) {
+    h += `<div class="lzeile"><div class="mitte"><b>Daten von diesem Gerät</b><small>Hier liegen noch ${lokalDb.kinder.length} Kind(er) und ${(lokalDb.buchungen || []).length} Buchungen aus der Zeit ohne Google-Tabelle.</small>
+      <div class="knopfreihe"><button class="btn klein" data-act="lokalUebernehmen">In die Tabelle übernehmen</button></div></div></div>`;
+  }
+  h += '</div></section>';
+
+  // Warteschlange
+  const q = ausstehend(), ab = abgelehnt();
+  if (q.length || ab.length) {
+    h += `<section><div class="abschnitt"><h2>Noch nicht gespeichert</h2></div><div class="liste">`;
+    if (q.length) h += `<div class="lzeile"><div class="mitte"><b>${q.length} Änderung(en) warten</b><small>Sie werden gesendet, sobald die Verbindung klappt.</small><div class="knopfreihe"><button class="btn klein" data-act="neuLaden">Jetzt senden</button></div></div></div>`;
+    ab.forEach((a, i) => {
+      h += `<div class="lzeile"><div class="mitte"><b class="minus">Abgelehnt: ${esc(opText(d, a.op))}</b><small>Grund: ${esc(a.grund)}</small>
+        <div class="knopfreihe"><button class="btn klein" data-act="abgelehntNochmal" data-i="${i}">Nochmal senden</button><button class="btn klein gefahr" data-act="abgelehntWeg" data-i="${i}">Verwerfen</button></div></div></div>`;
+    });
+    h += '</div></section>';
+  }
+
+  // Sicherung und Darstellung
+  const th = lsGet(LS.theme, 'auto');
+  h += `<section><div class="abschnitt"><h2>Sicherung</h2></div><div class="liste"><div class="lzeile"><div class="mitte">
+      <small>${lokal() ? 'Ohne Google-Tabelle ist diese Datei die einzige Sicherung. Regelmäßig herunterladen!' : 'Die Google-Tabelle hat einen eigenen Versionsverlauf. Zusätzlich kannst du hier alles als Datei sichern.'}</small>
+      <div class="knopfreihe"><button class="btn klein" data-act="sicherung">Sicherung (.json)</button><button class="btn klein" data-act="csv">Buchungen für Excel (.csv)</button><button class="btn klein" data-act="einspielen">Sicherung einspielen</button></div>
+    </div></div></div></section>
+    <section><div class="abschnitt"><h2>Darstellung</h2></div>
+      <div class="segment" role="group" aria-label="Farbschema">
+        ${[['auto', 'Automatisch'], ['hell', 'Hell'], ['dunkel', 'Dunkel']].map(([w, t]) => `<button data-act="theme" data-wert="${w}" aria-pressed="${th === w}">${t}</button>`).join('')}
+      </div>
+    </section>
+    <p class="klein" style="text-align:center;margin-top:28px">Taschengeld ${VERSION}${lokal() || !lsGet(LS.schluessel, '') ? '' : ' · <button class="link gefahr" data-act="abmelden">Auf diesem Gerät abmelden</button>'}</p>`;
+  return h;
+}
+
+function opText(d, op) {
+  if (!op) return 'unbekannt';
+  const x = op.daten || {}, k = kindVon(d, x.kindId || x.id);
+  if (op.typ === 'buchung') return euroVz(+x.betrag) + ' ' + ((ARTINFO[x.art] || {}).name || '') + (k ? ' für ' + k.name : '') + ' (' + x.datum + ')';
+  if (op.typ === 'storno') return 'Storno einer Buchung';
+  if (op.typ === 'kind') return 'Kind ' + (x.name || (k && k.name) || '');
+  if (op.typ === 'sparziel') return 'Sparziel ' + (x.name || '');
+  if (op.typ === 'regel') return 'Automatik' + (k ? ' für ' + k.name : '');
+  return op.typ;
+}
+
+// ---------- Formular-Blatt ----------
+let blattAbsenden = null;
+function blatt(html, absenden) {
+  $('#sheet').innerHTML = `<div class="hg" data-act="blattZu"></div><div class="blatt" role="dialog" aria-modal="true"><form id="bf" novalidate>${html}</form></div>`;
+  blattAbsenden = absenden;
+  const f = $('#bf');
+  f.addEventListener('submit', e => { e.preventDefault(); if (blattAbsenden) blattAbsenden(new FormData(f), f); });
+  const erstes = f.querySelector('input:not([type=radio]):not([type=checkbox]):not([readonly]), select');
+  if (erstes && matchMedia('(pointer:fine)').matches) erstes.focus();
+  return f;
+}
+function blattZu() { $('#sheet').innerHTML = ''; blattAbsenden = null; }
+function blattFehler(t) { const el = $('#bf .fehler'); if (el) el.textContent = t; }
+const knoepfe = (ok, extra) => `<p class="fehler" role="alert"></p><div class="knoepfe"><button type="button" class="btn" data-act="blattZu">Abbrechen</button><button class="btn primaer">${ok}</button></div>${extra || ''}`;
+
+function buchungForm(kindId, richtung, vorgabe) {
+  vorgabe = vorgabe || {};
+  const d = anzeige(), k = kindVon(d, kindId);
+  const arten = Object.keys(ARTINFO).filter(a => (richtung === 'ein' ? ARTINFO[a].ein : ARTINFO[a].aus) && (a !== 'sparziel' || vorgabe.art === 'sparziel'));
+  const art = vorgabe.art || arten[0];
+  const titel = vorgabe.zielId ? 'Sparziel einlösen' : vorgabe.art === 'taschengeld' ? 'Taschengeld für ' + k.name : richtung === 'ein' ? k.name + ' bekommt Geld' : 'Ausgabe von ' + k.name;
+  let warnBestaetigt = false;
+  blatt(`<h2>${esc(titel)}</h2>
+    <label class="feld"><span>Betrag in Euro</span><input class="gross zahl" name="betrag" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${esc(betragFeld(vorgabe.betrag))}"></label>
+    <div class="feld"><span>Art</span><div class="chips">${arten.map(a => `<label class="chip"><input type="radio" name="art" value="${a}" ${a === art ? 'checked' : ''}><span>${ARTINFO[a].icon} ${ARTINFO[a].name}</span></label>`).join('')}</div></div>
+    <label class="feld"><span>Datum</span><input type="date" name="datum" value="${heute()}" max="${heute()}"></label>
+    <label class="feld"><span>Notiz (optional)</span><input name="text" maxlength="120" autocomplete="off" value="${esc(vorgabe.text || '')}" placeholder="${richtung === 'ein' ? 'z. B. von Oma zum Geburtstag' : 'z. B. Comic, Eis, Lego'}"></label>
+    ${knoepfe('Speichern')}`, (fd) => {
+    const c = betragLesen(fd.get('betrag'));
+    if (!(c > 0)) return blattFehler('Bitte einen Betrag eingeben, z. B. 5 oder 2,50.');
+    if (c > Kern.MAX_BETRAG) return blattFehler('Der Betrag ist zu hoch.');
+    const datum = fd.get('datum');
+    if (!Kern.istDatum(datum)) return blattFehler('Bitte ein gültiges Datum wählen.');
+    if (datum > heute()) return blattFehler('Das Datum liegt in der Zukunft.');
+    const stand = Kern.stand(anzeige().buchungen, kindId);
+    if (richtung === 'aus' && c > stand && !warnBestaetigt) {
+      warnBestaetigt = true;
+      return blattFehler('Danach wäre der Kontostand ' + euro(stand - c) + '. Nochmal „Speichern“ tippen, wenn das so stimmt.');
+    }
+    const ops = [{ typ: 'buchung', daten: { id: neueId('b'), kindId, datum, betrag: richtung === 'aus' ? -c : c, art: fd.get('art'), text: fd.get('text').trim() } }];
+    if (vorgabe.zielId) ops.push({ typ: 'sparziel', daten: { id: vorgabe.zielId, status: 'erreicht', erledigt: datum } });
+    if (vormerken(ops)) { blattZu(); toast(vorgabe.zielId ? 'Glückwunsch! Ziel erreicht 🎉' : 'Gespeichert'); }
+  });
+}
+
+function buchungDetail(id) {
+  const d = anzeige(), b = d.buchungen.find(x => x.id === id);
+  if (!b) return;
+  const a = ARTINFO[b.art] || ARTINFO.sonstiges, k = kindVon(d, b.kindId);
+  const darf = MODUS === 'eltern' && !b.storniert;
+  blatt(`<h2>${a.icon} ${esc(b.text || a.name)}</h2>
+    <dl class="details">
+      <dt>Betrag</dt><dd class="zahl ${+b.betrag > 0 ? 'plus' : 'minus'}"><b>${euroVz(+b.betrag)}</b>${b.storniert ? ' (zählt nicht)' : ''}</dd>
+      <dt>Art</dt><dd>${esc(a.name)}</dd>
+      <dt>Datum</dt><dd>${datumLang(b.datum)}</dd>
+      ${b.text ? `<dt>Notiz</dt><dd>${esc(b.text)}</dd>` : ''}
+      ${k ? `<dt>Kind</dt><dd>${esc(k.name)}</dd>` : ''}
+      <dt>Eingetragen</dt><dd>${b.erstellt ? zeitpunkt(b.erstellt) : '–'}${b.quelle === 'auto' ? ' (automatisch)' : ''}</dd>
+      ${b.storniert ? `<dt>Storniert</dt><dd>${zeitpunkt(b.storniert)}${b.stornoGrund ? ' – ' + esc(b.stornoGrund) : ''}</dd>` : ''}
+    </dl>
+    ${darf ? `<hr><p class="klein">Falsch eingetragen? Beim Stornieren bleibt die Buchung im Verlauf sichtbar, zählt aber nicht mehr.</p>
+      <label class="feld"><span>Grund (optional)</span><input name="grund" maxlength="120" autocomplete="off" placeholder="z. B. doppelt eingetragen"></label>
+      <p class="fehler" role="alert"></p>
+      <div class="knoepfe"><button type="button" class="btn" data-act="blattZu">Schließen</button><button class="btn gefahr">Stornieren</button></div>`
+    : `<div class="knoepfe"><button type="button" class="btn primaer" data-act="blattZu">Schließen</button></div>`}`, (fd) => {
+    if (!darf) return blattZu();
+    if (vormerken([{ typ: 'storno', daten: { id: b.id, grund: fd.get('grund').trim() } }])) { blattZu(); toast('Storniert'); }
+  });
+}
+
+function emojiAuswahl(name, liste, aktuell) {
+  const alle = liste.includes(aktuell) || !aktuell ? liste : [aktuell].concat(liste.slice(0, -1));
+  return `<div class="emojis">${alle.map(e => `<label class="chip"><input type="radio" name="${name}" value="${esc(e)}" ${e === (aktuell || alle[0]) ? 'checked' : ''}><span>${esc(e)}</span></label>`).join('')}</div>`;
+}
+
+function zielForm(kindId, zielId) {
+  const d = anzeige(), z = zielId ? d.sparziele.find(x => x.id === zielId) : null;
+  blatt(`<h2>${z ? 'Sparziel bearbeiten' : 'Neues Sparziel'}</h2>
+    <label class="feld"><span>Worauf wird gespart?</span><input name="name" maxlength="40" autocomplete="off" placeholder="z. B. Lego-Set, Fahrrad" value="${esc(z ? z.name : '')}"></label>
+    <label class="feld"><span>Was kostet es? (Euro)</span><input name="betrag" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${esc(z ? betragFeld(+z.betrag) : '')}"></label>
+    <div class="feld"><span>Bild</span>${emojiAuswahl('emoji', ZIEL_EMOJIS, z && z.emoji)}</div>
+    ${knoepfe('Speichern', z ? `<button type="button" class="btn voll gefahr" style="margin-top:10px" data-act="zielAufgeben" data-id="${esc(z.id)}">Ziel aufgeben</button>` : '')}`, (fd) => {
+    const name = fd.get('name').trim(), c = betragLesen(fd.get('betrag'));
+    if (!name) return blattFehler('Bitte einen Namen eingeben.');
+    if (!(c > 0) || c > Kern.MAX_BETRAG) return blattFehler('Bitte den Preis eingeben, z. B. 49,99.');
+    let daten;
+    if (z) daten = { id: z.id, name, betrag: c, emoji: fd.get('emoji') };
+    else {
+      const pos = Math.max(-1, ...d.sparziele.filter(x => x.kindId === kindId && x.status === 'aktiv').map(x => +x.pos || 0)) + 1;
+      daten = { id: neueId('z'), kindId, name, betrag: c, emoji: fd.get('emoji'), pos };
+    }
+    if (vormerken([{ typ: 'sparziel', daten }])) { blattZu(); toast('Gespeichert'); }
+  });
+}
+
+function kindForm(kindId) {
+  const d = anzeige(), k = kindId ? kindVon(d, kindId) : null;
+  const farbe = k ? (+k.farbe || 0) : d.kinder.length % 6;
+  blatt(`<h2>${k ? esc(k.name) + ' bearbeiten' : 'Kind anlegen'}</h2>
+    <label class="feld"><span>Name</span><input name="name" maxlength="30" autocomplete="off" value="${esc(k ? k.name : '')}"></label>
+    <div class="feld"><span>Bild</span>${emojiAuswahl('emoji', KIND_EMOJIS, k ? k.emoji : KIND_EMOJIS[d.kinder.length % KIND_EMOJIS.length])}</div>
+    <div class="feld"><span>Farbe</span><div class="farben">${[0, 1, 2, 3, 4, 5].map(i => `<label class="chip" style="--kf:var(--k${i})"><input type="radio" name="farbe" value="${i}" ${i === farbe ? 'checked' : ''} aria-label="Farbe ${i + 1}"><span></span></label>`).join('')}</div></div>
+    ${knoepfe('Speichern', k ? `<button type="button" class="btn voll gefahr" style="margin-top:10px" data-act="kindArchivieren" data-id="${esc(k.id)}">Archivieren</button>` : '')}`, (fd) => {
+    const name = fd.get('name').trim();
+    if (!name) return blattFehler('Bitte einen Namen eingeben.');
+    const daten = { id: k ? k.id : neueId('k'), name, emoji: fd.get('emoji'), farbe: +fd.get('farbe') };
+    if (!k) daten.pos = Math.max(-1, ...d.kinder.map(x => +x.pos || 0)) + 1;
+    if (vormerken([{ typ: 'kind', daten }])) { blattZu(); toast(k ? 'Gespeichert' : name + ' ist angelegt'); }
+  });
+}
+
+function regelForm(kindId) {
+  const d = anzeige(), k = kindVon(d, kindId), r = regelVon(d, kindId) || {};
+  const aktiv = r.aktiv === 'ja';
+  const rh = r.rhythmus || 'woche';
+  const tagOptionen = (rh2, tag) => rh2 === 'woche'
+    ? WTAGE.map((w, i) => `<option value="${i + 1}" ${+tag === i + 1 ? 'selected' : ''}>${w}</option>`).join('')
+    : Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}" ${+tag === i + 1 ? 'selected' : ''}>${i === 30 ? 'Monatsende' : (i + 1) + '.'}</option>`).join('');
+  const f = blatt(`<h2>Automatik für ${esc(k.name)}</h2>
+    <p class="klein">Bucht das Taschengeld regelmäßig von selbst. Fällige Zahlungen erscheinen mit dem richtigen Datum, sobald jemand die App öffnet.</p>
+    <label class="schalter"><input type="checkbox" name="aktiv" ${aktiv ? 'checked' : ''}> Automatisch buchen</label>
+    <label class="feld"><span>Betrag in Euro</span><input name="betrag" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${esc(betragFeld(+r.betrag || 0))}"></label>
+    <div class="feld"><span>Rhythmus</span><div class="chips">
+      <label class="chip"><input type="radio" name="rhythmus" value="woche" ${rh === 'woche' ? 'checked' : ''}><span>Wöchentlich</span></label>
+      <label class="chip"><input type="radio" name="rhythmus" value="monat" ${rh === 'monat' ? 'checked' : ''}><span>Monatlich</span></label></div></div>
+    <label class="feld"><span id="tagLabel">${rh === 'woche' ? 'Wochentag' : 'Tag im Monat'}</span><select name="tag">${tagOptionen(rh, r.tag || (rh === 'woche' ? 5 : 1))}</select></label>
+    <label class="feld"><span>Ab</span><input type="date" name="ab" value="${aktiv && r.ab ? r.ab : heute()}"></label>
+    <p class="klein" id="abHinweis"></p>
+    ${knoepfe('Speichern')}`, (fd) => {
+    const c = betragLesen(fd.get('betrag') || '0');
+    const an = fd.get('aktiv') === 'on';
+    if (an && !(c > 0)) return blattFehler('Bitte einen Betrag eingeben.');
+    if (c > Kern.MAX_BETRAG) return blattFehler('Der Betrag ist zu hoch.');
+    if (!Kern.istDatum(fd.get('ab'))) return blattFehler('Bitte ein Startdatum wählen.');
+    const daten = { kindId, aktiv: an ? 'ja' : 'nein', betrag: c > 0 ? c : 0, rhythmus: fd.get('rhythmus'), tag: +fd.get('tag'), ab: fd.get('ab') };
+    if (vormerken([{ typ: 'regel', daten }])) { blattZu(); toast(an ? 'Automatik ist an' : 'Automatik ist aus'); }
+  });
+  const abHinweis = () => {
+    const ab = f.elements.ab.value;
+    $('#abHinweis').textContent = ab && ab < heute() && f.elements.aktiv.checked ? 'Das Datum liegt in der Vergangenheit: Verpasste Zahlungen seitdem werden nachgebucht.' : '';
+  };
+  f.addEventListener('change', e => {
+    if (e.target.name === 'rhythmus') {
+      const neu = f.elements.rhythmus.value;
+      f.elements.tag.innerHTML = tagOptionen(neu, neu === 'woche' ? 5 : 1);
+      $('#tagLabel').textContent = neu === 'woche' ? 'Wochentag' : 'Tag im Monat';
+    }
+    abHinweis();
+  });
+  abHinweis();
+}
+
+function kindLink(k) {
+  const api = apiUrl();
+  return location.origin + location.pathname + '?kind=' + encodeURIComponent(k.code) + (api !== API_URL_FEST ? '&api=' + encodeURIComponent(api) : '');
+}
+
+function teilenForm(kindId) {
+  const d = anzeige(), k = kindVon(d, kindId);
+  let inhalt;
+  if (lokal()) inhalt = `<p>Ein Link fürs Kinderhandy funktioniert erst, wenn die App mit eurer Google-Tabelle verbunden ist. Ohne Tabelle liegen die Daten nur auf diesem Gerät.</p>
+    <div class="knoepfe"><button type="button" class="btn" data-act="blattZu">Schließen</button><button type="button" class="btn primaer" data-act="verbindung">Verbinden</button></div>`;
+  else if (!k.code) inhalt = `<p>Der Link erscheint, sobald ${esc(k.name)} in der Tabelle gespeichert ist. Bitte gleich nochmal öffnen.</p>
+    <div class="knoepfe"><button type="button" class="btn primaer" data-act="blattZu">OK</button></div>`;
+  else {
+    const link = kindLink(k);
+    inhalt = `<p>Öffne diesen Link auf dem Handy oder Tablet von ${esc(k.name)} und lege ihn dort auf den Home-Bildschirm (Teilen → „Zum Home-Bildschirm“). Damit sieht ${esc(k.name)} nur den eigenen Stand und kann nichts ändern.</p>
+      <input class="linkfeld" readonly value="${esc(link)}" aria-label="Link für ${esc(k.name)}">
+      <div class="knoepfe">${navigator.share ? `<button type="button" class="btn primaer" data-act="linkTeilen" data-link="${esc(link)}">Teilen …</button>` : ''}<button type="button" class="btn${navigator.share ? '' : ' primaer'}" data-act="linkKopieren" data-link="${esc(link)}">Kopieren</button></div>
+      <hr><p class="klein">Ist der Link in falsche Hände geraten? Ein neuer Link macht den alten ungültig.</p>
+      <button type="button" class="btn voll gefahr" data-act="neuerLink" data-id="${esc(k.id)}">Neuen Link erzeugen</button>`;
+  }
+  blatt(`<h2>Link für ${esc(k.name)}</h2>${inhalt}`, () => blattZu());
+}
+
+function verbindungForm() {
+  const hatSchluessel = !!lsGet(LS.schluessel, '');
+  blatt(`<h2>Verbindung zur Google-Tabelle</h2>
+    <p class="klein">Die Daten liegen in eurer eigenen Google-Tabelle. Nur Geräte mit dem Eltern-Schlüssel können eintragen, die Kinder sehen über ihren Link nur ihren eigenen Stand.</p>
+    <label class="feld"><span>Web-App-URL${API_URL_FEST ? ' (fest eingetragen)' : ''}</span><input name="api" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(apiUrl())}"></label>
+    <label class="feld"><span>Eltern-Schlüssel</span><input name="schluessel" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${hatSchluessel ? 'gespeichert – leer lassen zum Behalten' : 'steht im Ausführungsprotokoll von „einrichten“'}"></label>
+    ${API_URL_FEST ? '' : '<p class="klein">URL leer lassen, um ohne Tabelle nur auf diesem Gerät zu arbeiten.</p>'}
+    ${knoepfe('Verbinden')}`, async (fd, f) => {
+    const url = fd.get('api').trim();
+    const schluessel = fd.get('schluessel').trim() || lsGet(LS.schluessel, '');
+    if (!url) {
+      if (API_URL_FEST) return blattFehler('Bitte die URL eintragen.');
+      lsSet(LS.api, null); lsSet(LS.schluessel, null);
+      S = leer(); sync = { zustand: '', meldung: '' };
+      blattZu(); toast('Nur noch auf diesem Gerät'); abgleichen();
+      return;
+    }
+    if (!erlaubteUrl(url)) return blattFehler('Die URL muss mit https://script.google.com/ beginnen.');
+    if (!schluessel) return blattFehler('Bitte den Eltern-Schlüssel eingeben.');
+    const knopf = f.querySelector('.btn.primaer');
+    knopf.disabled = true; knopf.textContent = 'Prüfe …';
+    let res;
+    try { res = await anfrageAn(url, { schluessel, ops: [] }); } catch (e) {
+      knopf.disabled = false; knopf.textContent = 'Verbinden';
+      return blattFehler(e.message === 'keinJson' ? 'Die URL liefert keine Daten. Ist die Web-App für „Jeder“ freigegeben?' : 'Keine Verbindung. Bitte die URL prüfen.');
+    }
+    knopf.disabled = false; knopf.textContent = 'Verbinden';
+    if (!res.ok) return blattFehler(res.fehler === 'schluessel' ? 'Der Schlüssel passt nicht.' : res.fehler === 'einrichten' ? 'In Apps Script zuerst „einrichten“ ausführen.' : 'Fehler: ' + (res.text || res.fehler));
+    const wechsel = url !== apiUrl();
+    lsSet(LS.api, url === API_URL_FEST ? null : url);
+    lsSet(LS.schluessel, schluessel);
+    if (wechsel) S = leer();
+    sync = { zustand: '', meldung: '' };
+    blattZu(); toast('Verbunden'); abgleichen();
+  });
+}
+
+function bestaetigen(titel, text, ok, gefahr, aktion) {
+  blatt(`<h2>${titel}</h2><p>${text}</p><div class="knoepfe"><button type="button" class="btn" data-act="blattZu">Abbrechen</button><button class="btn ${gefahr ? 'gefahr' : 'primaer'}">${ok}</button></div>`,
+    () => { blattZu(); aktion(); });
+}
+
+// Baut aus einem Datenstand (Gerät oder Sicherung) wiederholbare Änderungen. Vorhandenes bleibt, Fehlendes kommt dazu.
+function uebernahmeOps(daten) {
+  const ops = [];
+  (daten.kinder || []).forEach(k => ops.push({ typ: 'kind', daten: { id: k.id, name: k.name, emoji: k.emoji, farbe: +k.farbe || 0, pos: +k.pos || 0, archiviert: !!k.archiviert, angelegt: k.angelegt } }));
+  (daten.buchungen || []).forEach(b => {
+    ops.push({ typ: 'buchung', daten: { id: b.id, kindId: b.kindId, datum: b.datum, betrag: +b.betrag, art: b.art, text: b.text, erstellt: b.erstellt, quelle: b.quelle } });
+    if (b.storniert) ops.push({ typ: 'storno', daten: { id: b.id, grund: b.stornoGrund, zeit: b.storniert } });
+  });
+  (daten.sparziele || []).forEach(z => ops.push({ typ: 'sparziel', daten: { id: z.id, kindId: z.kindId, name: z.name, emoji: z.emoji, betrag: +z.betrag, pos: +z.pos || 0, status: z.status, erledigt: z.erledigt, erstellt: z.erstellt } }));
+  (daten.regeln || []).forEach(r => ops.push({ typ: 'regel', daten: { kindId: r.kindId, aktiv: r.aktiv, betrag: +r.betrag || 0, rhythmus: r.rhythmus, tag: +r.tag, ab: r.ab } }));
+  return ops;
+}
+
+function herunterladen(name, inhalt, typ) {
+  const url = URL.createObjectURL(new Blob([inhalt], { type: typ }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ---------- Aktionen ----------
+function gehe(seite, kindId) {
+  V = { seite, kindId: kindId || '', mehr: false };
+  history.pushState({ seite, kindId: V.kindId }, '');
+  render();
+  scrollTo(0, 0);
+}
+
+const AKTIONEN = {
+  zurueck: () => history.length > 1 ? history.back() : gehe('start'),
+  einstellungen: () => gehe('einstellungen'),
+  kind: x => gehe('kind', x.id),
+  neuLaden: () => abgleichen(),
+  mehr: () => { V.mehr = true; render(); },
+  blattZu,
+  taschengeld: x => {
+    const d = anzeige(), r = regelVon(d, x.kind);
+    const letzte = verlaufVon(d, x.kind).find(b => b.art === 'taschengeld' && !b.storniert);
+    buchungForm(x.kind, 'ein', { art: 'taschengeld', betrag: (r && +r.betrag) || (letzte && +letzte.betrag) || 0 });
+  },
+  einzahlen: x => buchungForm(x.kind, 'ein', { art: 'geschenk' }),
+  ausgeben: x => buchungForm(x.kind, 'aus', { art: 'ausgabe' }),
+  buchung: x => buchungDetail(x.id),
+  zielNeu: x => zielForm(x.kind),
+  zielBearbeiten: x => { const z = anzeige().sparziele.find(s => s.id === x.id); if (z) zielForm(z.kindId, z.id); },
+  zielEinloesen: x => {
+    const z = anzeige().sparziele.find(s => s.id === x.id);
+    if (z) buchungForm(z.kindId, 'aus', { art: 'sparziel', betrag: +z.betrag, text: z.name, zielId: z.id });
+  },
+  zielHoch: x => {
+    const d = anzeige(), z = d.sparziele.find(s => s.id === x.id);
+    const liste = zieleVon(d, z.kindId).aktiv, i = liste.findIndex(s => s.id === z.id);
+    if (i < 1) return;
+    [liste[i - 1], liste[i]] = [liste[i], liste[i - 1]];
+    vormerken(liste.map((s, n) => ({ typ: 'sparziel', daten: { id: s.id, pos: n } })).filter((o, n) => +liste[n].pos !== n));
+  },
+  zielAufgeben: x => bestaetigen('Ziel aufgeben?', 'Das Ziel wandert zu den früheren Zielen. Das Geld bleibt auf dem Konto.', 'Aufgeben', true,
+    () => vormerken([{ typ: 'sparziel', daten: { id: x.id, status: 'aufgegeben' } }])),
+  zielAktivieren: x => {
+    const d = anzeige(), z = d.sparziele.find(s => s.id === x.id);
+    const pos = Math.max(-1, ...d.sparziele.filter(s => s.kindId === z.kindId && s.status === 'aktiv').map(s => +s.pos || 0)) + 1;
+    vormerken([{ typ: 'sparziel', daten: { id: x.id, status: 'aktiv', pos } }]);
+  },
+  kindNeu: () => kindForm(),
+  kindBearbeiten: x => kindForm(x.id),
+  kindArchivieren: x => {
+    const k = kindVon(anzeige(), x.id);
+    bestaetigen(esc(k.name) + ' archivieren?', 'Alle Buchungen bleiben erhalten. Der Link fürs Kind funktioniert nicht mehr und die Automatik bucht nichts mehr. Wiederherstellen geht jederzeit in den Einstellungen.', 'Archivieren', true,
+      () => vormerken([{ typ: 'kind', daten: { id: x.id, archiviert: true } }]));
+  },
+  kindZurueck: x => vormerken([{ typ: 'kind', daten: { id: x.id, archiviert: false } }]),
+  regel: x => regelForm(x.id),
+  teilen: x => teilenForm(x.id),
+  linkTeilen: x => navigator.share({ title: 'Taschengeld', text: 'Dein Taschengeld', url: x.link }).catch(() => {}),
+  linkKopieren: x => navigator.clipboard.writeText(x.link).then(() => toast('Link kopiert'), () => toast('Kopieren nicht möglich')),
+  neuerLink: x => bestaetigen('Neuen Link erzeugen?', 'Der bisherige Link funktioniert danach nicht mehr. Du musst den neuen Link wieder aufs Kinderhandy schicken.', 'Neuer Link', true,
+    () => { vormerken([{ typ: 'kind', daten: { id: x.id, neuerCode: true } }]); toast('Neuer Link kommt gleich'); }),
+  verbindung: () => verbindungForm(),
+  abmelden: () => bestaetigen('Auf diesem Gerät abmelden?', ausstehend().length ? '<b>Achtung: ' + ausstehend().length + ' Änderung(en) sind noch nicht gespeichert und gehen verloren.</b>' : 'Der Eltern-Schlüssel und die zwischengespeicherten Daten werden von diesem Gerät entfernt. In der Google-Tabelle bleibt alles erhalten.', 'Abmelden', true,
+    () => { lsSet(LS.schluessel, null); lsSet(LS.daten, null); lsSet(LS.ausstehend, null); lsSet(LS.abgelehnt, null); S = leer(); sync = { zustand: 'anmelden', meldung: '' }; gehe('start'); }),
+  lokalUebernehmen: () => {
+    const db = lsJson(LS.lokal, {});
+    bestaetigen('Daten übernehmen?', 'Kinder, Buchungen, Sparziele und Automatik von diesem Gerät kommen in die Google-Tabelle. Was dort schon steht, bleibt erhalten. Die Links fürs Kinderhandy erzeugst du danach neu.', 'Übernehmen', false,
+      () => { if (vormerken(uebernahmeOps(db))) { db.uebernommen = new Date().toISOString(); lsSet(LS.lokal, JSON.stringify(db)); toast('Wird übernommen'); } });
+  },
+  abgelehntNochmal: x => {
+    const ab = abgelehnt(), [e] = ab.splice(+x.i, 1);
+    lsSet(LS.abgelehnt, JSON.stringify(ab));
+    if (e && e.op) vormerken([{ typ: e.op.typ, daten: e.op.daten }]); else render();
+  },
+  abgelehntWeg: x => bestaetigen('Änderung verwerfen?', 'Sie wird nicht gespeichert.', 'Verwerfen', true, () => {
+    const ab = abgelehnt(); ab.splice(+x.i, 1); lsSet(LS.abgelehnt, JSON.stringify(ab)); render();
+  }),
+  sicherung: () => {
+    const d = anzeige();
+    herunterladen('taschengeld-sicherung-' + heute() + '.json', JSON.stringify({ fmt: 'taschengeld', v: 1, exportiert: new Date().toISOString(), daten: d }, null, 1), 'application/json');
+  },
+  csv: () => {
+    const d = anzeige(), namen = Object.fromEntries(d.kinder.map(k => [k.id, k.name]));
+    const zeilen = [['Kind', 'Datum', 'Art', 'Notiz', 'Betrag', 'Storniert', 'Storno-Grund', 'Eingetragen']];
+    d.buchungen.slice().sort((a, b) => a.datum.localeCompare(b.datum)).forEach(b => zeilen.push([
+      namen[b.kindId] || '', b.datum, (ARTINFO[b.art] || {}).name || b.art, b.text, (+b.betrag / 100).toFixed(2).replace('.', ','),
+      b.storniert ? zeitpunkt(b.storniert) : '', b.stornoGrund, b.erstellt ? zeitpunkt(b.erstellt) : '']));
+    const csv = '﻿' + zeilen.map(z => z.map(v => { v = String(v == null ? '' : v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';')).join('\r\n');
+    herunterladen('taschengeld-buchungen-' + heute() + '.csv', csv, 'text/csv;charset=utf-8');
+  },
+  einspielen: () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = async () => {
+      let x;
+      try { x = JSON.parse(await inp.files[0].text()); } catch (e) { return toast('Datei nicht lesbar'); }
+      if (!x || x.fmt !== 'taschengeld' || !x.daten) return toast('Das ist keine Taschengeld-Sicherung');
+      const n = (x.daten.buchungen || []).length;
+      bestaetigen('Sicherung einspielen?', `Die Sicherung vom ${esc(zeitpunkt(x.exportiert))} enthält ${(x.daten.kinder || []).length} Kind(er) und ${n} Buchungen. Fehlendes kommt dazu, Vorhandenes bleibt. Stornos aus der Sicherung werden übernommen.`, 'Einspielen', false,
+        () => { if (vormerken(uebernahmeOps(x.daten))) toast('Wird eingespielt'); });
+    };
+    inp.click();
+  },
+  theme: x => {
+    lsSet(LS.theme, x.wert === 'auto' ? null : x.wert);
+    if (x.wert === 'auto') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = x.wert === 'hell' ? 'light' : 'dark';
+    render();
+  }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const f = AKTIONEN[el.dataset.act];
+  if (!f) return;
+  e.preventDefault();
+  if (el.closest('#sheet') && !['blattZu', 'linkTeilen', 'linkKopieren'].includes(el.dataset.act)) blattZu();
+  f(el.dataset, el);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && blattAbsenden) blattZu(); });
+addEventListener('popstate', e => {
+  const s = e.state || {};
+  V = { seite: s.seite || 'start', kindId: s.kindId || '', mehr: false };
+  blattZu(); render();
+});
+
+let toastT = 0;
+function toast(t) {
+  const el = $('#toast');
+  el.textContent = t; el.classList.add('an');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('an'), 2400);
+}
+
+// ---------- Start ----------
+history.replaceState({ seite: 'start', kindId: '' }, '');
+render();
+abgleichen();
+setInterval(() => { if (!document.hidden && !lokal()) abgleichen(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) abgleichen(); });
+addEventListener('online', () => abgleichen());
+if (location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
