@@ -21,6 +21,7 @@
   --accent: #2D7A57; --accent-ink: #FFFFFF; --accent-soft: #E2F0E8;
   --plus: #23774F; --minus: #B23F33; --warn: #8F6210; --warn-soft: #FBF1DC; --minus-soft: #F8E6E3;
   --k0: #3B74C9; --k1: #C94C76; --k2: #23897D; --k3: #C46E1A; --k4: #7558C2; --k5: #55862C;
+  --d-ein: #11764F; --d-aus: #E07A2E;
   --shadow: 0 1px 2px rgba(30,35,32,.05), 0 6px 18px rgba(30,35,32,.06);
   --overlay: rgba(20,24,22,.45);
   color-scheme: light;
@@ -31,6 +32,7 @@
     --accent: #4DB487; --accent-ink: #0D1A13; --accent-soft: #1E3329;
     --plus: #5CC796; --minus: #EE8577; --warn: #E3B355; --warn-soft: #33291A; --minus-soft: #3A2220;
     --k0: #6FA0EA; --k1: #E880A3; --k2: #4FB9AC; --k3: #E59A4F; --k4: #A08AE6; --k5: #86B85A;
+    --d-ein: #167A55; --d-aus: #D67A35;
     --shadow: none;
     --overlay: rgba(0,0,0,.6);
     color-scheme: dark;
@@ -41,6 +43,7 @@
   --accent: #4DB487; --accent-ink: #0D1A13; --accent-soft: #1E3329;
   --plus: #5CC796; --minus: #EE8577; --warn: #E3B355; --warn-soft: #33291A; --minus-soft: #3A2220;
   --k0: #6FA0EA; --k1: #E880A3; --k2: #4FB9AC; --k3: #E59A4F; --k4: #A08AE6; --k5: #86B85A;
+  --d-ein: #167A55; --d-aus: #D67A35;
   --shadow: none;
   --overlay: rgba(0,0,0,.6);
   color-scheme: dark;
@@ -152,6 +155,40 @@ details.frueher summary { cursor: pointer; color: var(--muted); font-size: 15px;
 .zeile.storniert b { text-decoration: line-through; color: var(--muted); }
 .zeile.offen .ztext small::after { content: " · wird gespeichert"; color: var(--warn); }
 
+/* Diagramm Einnahmen/Ausgaben */
+.diagramm { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 14px 12px; }
+.jahre { overflow-x: auto; }
+.jahre button { flex: 0 0 auto; min-width: 64px; }
+.d-legende { display: flex; gap: 16px; font-size: 14px; color: var(--muted); margin: 12px 0 8px; }
+.d-legende i, .d-zahl i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.d-plot { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; }
+.d-yachse { position: relative; height: 160px; min-width: 30px; font-size: 11px; color: var(--muted); }
+.d-yachse span { position: absolute; right: 0; transform: translateY(50%); white-space: nowrap; }
+.d-flaeche { position: relative; height: 160px; border-bottom: 1px solid var(--muted); }
+.d-linie { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); }
+.d-spalten { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(12, 1fr); }
+.d-monat { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 100%; padding: 0 1px; background: none; border: 0; border-radius: 6px 6px 0 0; }
+.d-monat:hover, .d-monat[aria-pressed="true"] { background: var(--card2); }
+.d-monat i { display: block; width: min(42%, 14px); border-radius: 4px 4px 0 0; }
+.d-ein { background: var(--d-ein); }
+.d-aus { background: var(--d-aus); }
+.d-xachse { grid-column: 2; display: grid; grid-template-columns: repeat(12, 1fr); font-size: 11px; color: var(--muted); text-align: center; padding-top: 4px; }
+.d-xachse .an { color: var(--text); font-weight: 700; }
+.d-xachse .lang { display: none; }
+@media (min-width: 520px) { .d-xachse .lang { display: inline; } .d-xachse .kurz { display: none; } }
+.d-info { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.d-info h3 { font-size: 15px; margin: 0 0 8px; }
+.d-zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.d-zahl small { display: block; color: var(--muted); font-size: 13px; }
+.d-zahl b { font-size: 17px; }
+.d-arten { margin-top: 10px; font-size: 14px; }
+.d-art { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; }
+.d-art span:first-child { color: var(--muted); }
+.d-tabelle { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+.d-tabelle th, .d-tabelle td { padding: 5px 4px; border-bottom: 1px solid var(--line); text-align: right; }
+.d-tabelle th:first-child, .d-tabelle td:first-child { text-align: left; }
+.d-tabelle tfoot td { font-weight: 700; border-bottom: 0; }
+
 /* Einstellungen */
 .liste { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
 .lzeile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
@@ -183,6 +220,8 @@ details.frueher summary { cursor: pointer; color: var(--muted); font-size: 15px;
 .chip span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--card2); font-weight: 600; font-size: 15px; cursor: pointer; }
 .chip input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.vorschlag { margin: -6px 0 14px; text-align: center; }
+.chip-btn { border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--text); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 15px; }
 .emojis { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
 .emojis .chip span { justify-content: center; width: 100%; aspect-ratio: 1; padding: 0; font-size: 24px; border-radius: 12px; }
 .emojis .chip input:checked + span { background: var(--accent-soft); border: 2px solid var(--accent); }
@@ -221,7 +260,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
 
 // Nach der Einrichtung die Web-App-URL von Apps Script eintragen (leer = nur dieses Gerät)
 const API_URL_FEST = '';
-const VERSION = '1.0';
+const VERSION = '1.2';
 
 const LS = {
   api: 'tg.api', schluessel: 'tg.schluessel', daten: 'tg.daten', ausstehend: 'tg.ausstehend',
@@ -231,7 +270,10 @@ const ARTINFO = {
   taschengeld: { name: 'Taschengeld', icon: '💶', ein: true },
   geschenk: { name: 'Geschenk', icon: '🎁', ein: true },
   belohnung: { name: 'Belohnung', icon: '⭐', ein: true },
+  mithelfen: { name: 'Mithelfen', icon: '🧽', ein: true, tipp: 'z. B. Auto waschen, Spülmaschine ausräumen' },
   ausgabe: { name: 'Ausgabe', icon: '🛒', aus: true },
+  spielsachen: { name: 'Spielsachen', icon: '🧸', aus: true },
+  suessigkeiten: { name: 'Süßigkeiten', icon: '🍬', aus: true },
   sparziel: { name: 'Sparziel eingelöst', icon: '🎯', aus: true },
   sonstiges: { name: 'Sonstiges', icon: '✏️', ein: true, aus: true }
 };
@@ -597,6 +639,8 @@ function renderKind(d, kindId, kinderSicht) {
   }
   h += '</section>';
 
+  h += renderDiagramm(d, k);
+
   // Verlauf
   const liste = verlaufVon(d, k.id);
   const offen = new Set(ausstehend().filter(o => o.typ === 'buchung' || o.typ === 'storno').map(o => o.daten.id));
@@ -633,6 +677,76 @@ function renderKind(d, kindId, kinderSicht) {
     if (liste.length > max) h += `<button class="btn voll" style="margin-top:10px" data-act="mehr">Ältere anzeigen (${liste.length - max})</button>`;
   }
   h += '</section>';
+  return h;
+}
+
+// Einnahmen und Ausgaben je Monat und Jahr (ohne Stornos), dazu die Summe je Art
+function jahresDaten(d, kindId) {
+  const jahre = {};
+  d.buchungen.forEach(b => {
+    if (b.kindId !== kindId || b.storniert) return;
+    const j = b.datum.slice(0, 4), m = +b.datum.slice(5, 7) - 1, betrag = +b.betrag;
+    const monate = jahre[j] || (jahre[j] = Array.from({ length: 12 }, () => ({ ein: 0, aus: 0, arten: {} })));
+    if (betrag > 0) monate[m].ein += betrag; else monate[m].aus -= betrag;
+    monate[m].arten[b.art] = (monate[m].arten[b.art] || 0) + betrag;
+  });
+  return jahre;
+}
+
+// Achsenende nach oben auf 1-2-4-5-10 runden, damit die Mittellinie ein glatter Betrag ist
+function achsenEnde(c) {
+  if (c <= 0) return 1000;
+  const e = Math.pow(10, Math.floor(Math.log10(c)));
+  return [1, 2, 4, 5, 10].map(f => f * e).find(x => x >= c);
+}
+const euroKurz = c => (c / 100).toLocaleString('de-DE', { maximumFractionDigits: c % 100 ? 2 : 0 }) + ' €';
+
+function renderDiagramm(d, k) {
+  const daten = jahresDaten(d, k.id);
+  if (!Object.keys(daten).length) return '';
+  const jetztJahr = heute().slice(0, 4);
+  const jahre = Array.from(new Set(Object.keys(daten).concat(jetztJahr))).sort();
+  const jahr = jahre.includes(V.jahr) ? V.jahr : jetztJahr;
+  const monate = daten[jahr] || Array.from({ length: 12 }, () => ({ ein: 0, aus: 0, arten: {} }));
+  const max = achsenEnde(Math.max(...monate.map(m => Math.max(m.ein, m.aus))));
+  const gewaehlt = V.monat >= 0 && V.monat < 12 ? V.monat : -1;
+  const kurz = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+  const pct = c => (c / max * 100).toFixed(1);
+  const balken = (c, cls) => `<i class="${cls}" style="height:${pct(c)}%;min-height:${c > 0 ? 2 : 0}px"></i>`;
+
+  let h = `<section><div class="abschnitt"><h2>Einnahmen &amp; Ausgaben</h2></div><div class="diagramm">
+    <div class="segment jahre" role="group" aria-label="Jahr">${jahre.map(j => `<button data-act="jahr" data-jahr="${j}" aria-pressed="${j === jahr}">${j}</button>`).join('')}</div>
+    <div class="d-legende"><span><i class="d-ein"></i>Einnahmen</span><span><i class="d-aus"></i>Ausgaben</span></div>
+    <div class="d-plot">
+      <div class="d-yachse" aria-hidden="true"><span style="bottom:0">0 €</span><span style="bottom:50%">${euroKurz(max / 2)}</span><span style="bottom:100%">${euroKurz(max)}</span></div>
+      <div class="d-flaeche"><div class="d-linie" style="bottom:50%"></div><div class="d-linie" style="bottom:100%"></div>
+        <div class="d-spalten">${monate.map((m, i) => `<button class="d-monat" data-act="monat" data-m="${i}" aria-pressed="${i === gewaehlt}"
+          aria-label="${MONATE[i]}: Einnahmen ${euro(m.ein)}, Ausgaben ${euro(m.aus)}" title="${MONATE[i]}: +${euro(m.ein)} / −${euro(m.aus)}">${balken(m.ein, 'd-ein')}${balken(m.aus, 'd-aus')}</button>`).join('')}</div>
+      </div>
+      <div class="d-xachse" aria-hidden="true">${kurz.map((b, i) => `<span class="${i === gewaehlt ? 'an' : ''}"><span class="kurz">${b}</span><span class="lang">${MONATE[i].slice(0, 3)}</span></span>`).join('')}</div>
+    </div>`;
+
+  // Zahlen zum gewählten Monat, sonst zum ganzen Jahr
+  const teil = gewaehlt >= 0 ? [monate[gewaehlt]] : monate;
+  const ein = teil.reduce((s, m) => s + m.ein, 0), aus = teil.reduce((s, m) => s + m.aus, 0);
+  const arten = {};
+  teil.forEach(m => Object.keys(m.arten).forEach(a => { arten[a] = (arten[a] || 0) + m.arten[a]; }));
+  const artListe = Object.keys(arten).filter(a => arten[a]).sort((a, b) => Math.abs(arten[b]) - Math.abs(arten[a]));
+  h += `<div class="d-info"><h3>${gewaehlt >= 0 ? MONATE[gewaehlt] + ' ' + jahr : 'Ganzes Jahr ' + jahr}</h3>
+    <div class="d-zahlen zahl">
+      <div class="d-zahl"><small><i class="d-ein"></i>Einnahmen</small><b>${euro(ein)}</b></div>
+      <div class="d-zahl"><small><i class="d-aus"></i>Ausgaben</small><b>${euro(aus)}</b></div>
+      <div class="d-zahl"><small>Gespart</small><b>${euroVz(ein - aus) || euro(0)}</b></div>
+    </div>
+    ${artListe.length ? `<div class="d-arten">${artListe.map(a => { const info = ARTINFO[a] || { name: a, icon: '•' }; return `<div class="d-art"><span>${info.icon} ${esc(info.name)}</span><span class="zahl">${euroVz(arten[a])}</span></div>`; }).join('')}</div>`
+      : '<p class="klein" style="margin:10px 0 0">Keine Buchungen in diesem Zeitraum.</p>'}
+    ${gewaehlt >= 0 ? '<button class="link" data-act="monat" data-m="-1">Ganzes Jahr anzeigen</button>' : '<p class="klein" style="margin:8px 0 0">Tipp: Einen Monat antippen für die Einzelheiten.</p>'}
+  </div>
+  <details class="frueher"><summary>Als Tabelle</summary><table class="d-tabelle zahl">
+    <thead><tr><th>Monat</th><th>Einnahmen</th><th>Ausgaben</th><th>Gespart</th></tr></thead>
+    <tbody>${monate.map((m, i) => `<tr><td>${MONATE[i]}</td><td>${m.ein ? euro(m.ein) : '–'}</td><td>${m.aus ? euro(m.aus) : '–'}</td><td>${m.ein || m.aus ? euroVz(m.ein - m.aus) || euro(0) : '–'}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${jahr}</td><td>${euro(monate.reduce((s, m) => s + m.ein, 0))}</td><td>${euro(monate.reduce((s, m) => s + m.aus, 0))}</td><td>${euroVz(monate.reduce((s, m) => s + m.ein - m.aus, 0)) || euro(0)}</td></tr></tfoot>
+  </table></details></div></section>`;
   return h;
 }
 
@@ -734,8 +848,9 @@ function buchungForm(kindId, richtung, vorgabe) {
   const art = vorgabe.art || arten[0];
   const titel = vorgabe.zielId ? 'Sparziel einlösen' : vorgabe.art === 'taschengeld' ? 'Taschengeld für ' + k.name : richtung === 'ein' ? k.name + ' bekommt Geld' : 'Ausgabe von ' + k.name;
   let warnBestaetigt = false;
-  blatt(`<h2>${esc(titel)}</h2>
+  const f = blatt(`<h2>${esc(titel)}</h2>
     <label class="feld"><span>Betrag in Euro</span><input class="gross zahl" name="betrag" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${esc(betragFeld(vorgabe.betrag))}"></label>
+    ${vorgabe.vorschlag ? `<div class="vorschlag"><button type="button" class="chip-btn" id="vorschlag">${euro(vorgabe.vorschlag)} wie üblich</button></div>` : ''}
     <div class="feld"><span>Art</span><div class="chips">${arten.map(a => `<label class="chip"><input type="radio" name="art" value="${a}" ${a === art ? 'checked' : ''}><span>${ARTINFO[a].icon} ${ARTINFO[a].name}</span></label>`).join('')}</div></div>
     <label class="feld"><span>Datum</span><input type="date" name="datum" value="${heute()}" max="${heute()}"></label>
     <label class="feld"><span>Notiz (optional)</span><input name="text" maxlength="120" autocomplete="off" value="${esc(vorgabe.text || '')}" placeholder="${richtung === 'ein' ? 'z. B. von Oma zum Geburtstag' : 'z. B. Comic, Eis, Lego'}"></label>
@@ -755,6 +870,14 @@ function buchungForm(kindId, richtung, vorgabe) {
     if (vorgabe.zielId) ops.push({ typ: 'sparziel', daten: { id: vorgabe.zielId, status: 'erreicht', erledigt: datum } });
     if (vormerken(ops)) { blattZu(); toast(vorgabe.zielId ? 'Glückwunsch! Ziel erreicht 🎉' : 'Gespeichert'); }
   });
+  const vorschlag = $('#vorschlag');
+  if (vorschlag) vorschlag.addEventListener('click', () => { f.elements.betrag.value = betragFeld(vorgabe.vorschlag); });
+  const platzhalter = () => {
+    const a = ARTINFO[f.elements.art.value];
+    f.elements.text.placeholder = (a && a.tipp) || (richtung === 'ein' ? 'z. B. von Oma zum Geburtstag' : 'z. B. Comic, Eis, Lego');
+  };
+  f.addEventListener('change', e => { if (e.target.name === 'art') platzhalter(); });
+  platzhalter();
 }
 
 function buchungDetail(id) {
@@ -964,11 +1087,13 @@ const AKTIONEN = {
   kind: x => gehe('kind', x.id),
   neuLaden: () => abgleichen(),
   mehr: () => { V.mehr = true; render(); },
+  jahr: x => { V.jahr = x.jahr; V.monat = -1; render(); },
+  monat: x => { const m = +x.m; V.monat = V.monat === m ? -1 : m; render(); },
   blattZu,
   taschengeld: x => {
     const d = anzeige(), r = regelVon(d, x.kind);
     const letzte = verlaufVon(d, x.kind).find(b => b.art === 'taschengeld' && !b.storniert);
-    buchungForm(x.kind, 'ein', { art: 'taschengeld', betrag: (r && +r.betrag) || (letzte && +letzte.betrag) || 0 });
+    buchungForm(x.kind, 'ein', { art: 'taschengeld', vorschlag: (r && +r.betrag) || (letzte && +letzte.betrag) || 0 });
   },
   einzahlen: x => buchungForm(x.kind, 'ein', { art: 'geschenk' }),
   ausgeben: x => buchungForm(x.kind, 'aus', { art: 'ausgabe' }),

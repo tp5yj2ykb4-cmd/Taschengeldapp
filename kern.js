@@ -4,8 +4,11 @@
 var Kern = (function () {
   'use strict';
 
-  // Vorzeichen je Art: 1 = nur Eingang, -1 = nur Ausgang, 0 = beides
-  var ARTEN = { taschengeld: 1, geschenk: 1, belohnung: 1, ausgabe: -1, sparziel: -1, sonstiges: 0 };
+  // Vorzeichen je Art: 1 = nur Eingang, -1 = nur Ausgang, 0 = beides.
+  // Andere Arten aus Kleinbuchstaben werden ohne Vorzeichenprüfung angenommen,
+  // damit eine neue Kategorie in der App kein neues Backend braucht.
+  var ARTEN = { taschengeld: 1, geschenk: 1, belohnung: 1, mithelfen: 1,
+    ausgabe: -1, spielsachen: -1, suessigkeiten: -1, sparziel: -1, sonstiges: 0 };
   var FARBEN = 6;
   var MAX_BETRAG = 1000000;   // 10.000 € in Cent
   var MAX_NACHHOLEN = 400;    // so viele Tage bucht die Automatik höchstens nach
@@ -106,10 +109,11 @@ var Kern = (function () {
       if (!istId(d.id)) return 'Ungültige ID';
       if (finde(db.buchungen, 'id', d.id)) return '';
       if (!finde(db.kinder, 'id', d.kindId)) return 'Kind unbekannt';
-      if (!hat(ARTEN, d.art)) return 'Ungültige Art';
+      var bekannt = typeof d.art === 'string' && hat(ARTEN, d.art);
+      if (!bekannt && !(typeof d.art === 'string' && /^[a-z]{2,20}$/.test(d.art))) return 'Ungültige Art';
       var b = ganz(d.betrag);
       if (!b || Math.abs(b) > MAX_BETRAG) return 'Ungültiger Betrag';
-      if (ARTEN[d.art] * b < 0) return 'Vorzeichen passt nicht zur Art';
+      if (bekannt && ARTEN[d.art] * b < 0) return 'Vorzeichen passt nicht zur Art';
       if (!istDatum(d.datum)) return 'Ungültiges Datum';
       db.buchungen.push({ id: d.id, kindId: d.kindId, datum: d.datum, betrag: String(b), art: d.art, text: text(d.text, 120),
         erstellt: zeitOder(d.erstellt, ctx.jetzt), storniert: '', stornoGrund: '',
