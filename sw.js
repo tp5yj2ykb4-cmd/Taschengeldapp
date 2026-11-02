@@ -9,7 +9,8 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  // Nur eigene alte Caches löschen: Der Cache-Speicher gilt für die ganze github.io-Domain, also auch für die anderen Apps.
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('taschengeld-') && k !== CACHE).map(k => caches.delete(k)))));
   self.clients.claim();
 });
 
